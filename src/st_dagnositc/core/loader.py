@@ -8,6 +8,8 @@ import polars as pl
 class FileLoaderProtocol(Protocol):
     """Protocol for file loaders"""
 
+    VALID_SUFFIXES: list[str] = []
+
     def can_load(self, file_obj: Any) -> bool:
         """Check if this loader can handle the file"""
         ...
@@ -17,11 +19,32 @@ class FileLoaderProtocol(Protocol):
         ...
 
 
-class CSVLoader:
-    """Loader for CSV files"""
+class BaseLoader:
+    """Base loader"""
+
+    VALID_SUFFIXES: list[str] = []
 
     def can_load(self, file_obj: Any) -> bool:
-        return hasattr(file_obj, "name") and file_obj.name.lower().endswith(".csv")
+        if not self.has_name(file_obj):
+            return False
+        return self.has_suffix(file_obj)
+
+    def load(self, file_obj: Any, **kwargs: Any) -> pl.DataFrame:
+        raise NotImplementedError
+
+    def has_name(self, file_obj: Any) -> bool:
+        return hasattr(file_obj, "name")
+
+    def has_suffix(self, file_obj: Any) -> bool:
+        name = file_obj.name
+        suffix = "." + name.lower().split(".")[-1]
+        return suffix in self.VALID_SUFFIXES
+
+
+class CSVLoader(BaseLoader):
+    """Loader for CSV files"""
+
+    VALID_SUFFIXES = [".csv"]
 
     def load(self, file_obj: Any, **kwargs: Any) -> pl.DataFrame:
         if hasattr(file_obj, "read"):
@@ -37,13 +60,10 @@ class CSVLoader:
             return pl.read_csv(file_obj, **kwargs)
 
 
-class ExcelLoader:
+class ExcelLoader(BaseLoader):
     """Loader for Excel files"""
 
-    def can_load(self, file_obj: Any) -> bool:
-        if not hasattr(file_obj, "name"):
-            return False
-        return bool(file_obj.name.lower().endswith((".xlsx", ".xls")))
+    VALID_SUFFIXES: list[str] = [".xlsx", ".xls"]
 
     def load(self, file_obj: Any, **kwargs: Any) -> pl.DataFrame:
         import pandas as pd
@@ -61,11 +81,10 @@ class ExcelLoader:
         return pl.from_pandas(df_pandas)  # type: ignore[no-any-return]
 
 
-class JSONLoader:
+class JSONLoader(BaseLoader):
     """Loader for JSON files"""
 
-    def can_load(self, file_obj: Any) -> bool:
-        return hasattr(file_obj, "name") and file_obj.name.lower().endswith(".json")
+    VALID_SUFFIXES: list[str] = [".json"]
 
     def load(self, file_obj: Any, **kwargs: Any) -> pl.DataFrame:
         if hasattr(file_obj, "read"):
@@ -81,11 +100,10 @@ class JSONLoader:
             return pl.read_json(file_obj, **kwargs)
 
 
-class ParquetLoader:
+class ParquetLoader(BaseLoader):
     """Loader for Parquet files"""
 
-    def can_load(self, file_obj: Any) -> bool:
-        return hasattr(file_obj, "name") and file_obj.name.lower().endswith(".parquet")
+    VALID_SUFFIXES: list[str] = [".parquet"]
 
     def load(self, file_obj: Any, **kwargs: Any) -> pl.DataFrame:
         if hasattr(file_obj, "read"):
