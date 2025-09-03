@@ -29,7 +29,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["black>=25.1.0", "mypy>=1.17.1", "pytest>=8.4.1", "ruff>=0.12.11"]
+dev = [
+    "black>=25.1.0",
+    "mypy>=1.17.1",
+    "pandas-stubs>=2.3.2.250827",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.11",
+]
 doc = ["mkdocs>=1.6.1"]
 excel = ["openpyxl>=3.1.5", "pandas>=2.3.2"]
 
@@ -40,7 +47,7 @@ Repository = "https://github.com/huwilerb/st-dagnostic.git"
 Issues = "https://github.com/huwilerb/st-dagnostic/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/st_dagnostic"]
+packages = ["src/st_dagnositc"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -67,9 +74,11 @@ profile = "black"
 multi_line_output = 3
 line_length = 88
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["E", "F", "W", "B", "I", "N", "UP"]
 ignore = ["E501"]                             # Line too long (handled by black)
+
+[tool.ruff]
 line-length = 88
 target-version = "py38"
 
@@ -78,11 +87,11 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=src/st_dagnostic --cov-report=html --cov-report=term-missing"
+addopts = "--cov=src/st_dagnositc --cov-report=html --cov-report=term-missing"
 
 [tool.coverage.run]
-source = ["src/st_dagnostic"]
-omit = ["tests/*", "src/st_dagnostic/__init__.py"]
+source = ["src/st_dagnositc"]
+omit = ["tests/*", "src/st_dagnositc/__init__.py"]
 
 [tool.coverage.report]
 exclude_lines = [
